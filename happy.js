@@ -42,54 +42,56 @@
                 id: selector.slice(1) + '_unhappy'
             },
             errorEl = $(error.id).length > 0 ? $(error.id) : getError(error);
+            
+            if (field.length) {
+                fields.push(field);
+                field.testValid = function (submit) {
+                    var val,
+                    el = $(this),
+                    gotFunc,
+                    error = false,
+                    temp,
+                    required = !!el.get(0).attributes.getNamedItem('required') || opts.required,
+                    password = (field.attr('type') === 'password'),
+                    arg = isFunction(opts.arg) ? opts.arg() : opts.arg;
 
-            fields.push(field);
-            field.testValid = function (submit) {
-                var val,
-                el = $(this),
-                gotFunc,
-                error = false,
-                temp,
-                required = !!el.get(0).attributes.getNamedItem('required') || opts.required,
-                password = (field.attr('type') === 'password'),
-                arg = isFunction(opts.arg) ? opts.arg() : opts.arg;
-
-                // clean it or trim it
-                if (isFunction(opts.clean)) {
-                    val = opts.clean(el.val());
-                } else if (!opts.trim && !password) {
-                    val = trim(el);
-                } else {
-                    val = el.val();
-                }
-
-                // write it back to the field
-                el.val(val);
-
-                // get the value
-                gotFunc = ((val.length > 0 || required === 'sometimes') && isFunction(opts.test));
-
-                // check if we've got an error on our hands
-                if (submit === true && required === true && val.length === 0) {
-                    error = true;
-                } else if (gotFunc) {
-                    error = !opts.test(val, arg);
-                }
-
-                if (error) {
-                    el.addClass('unhappy').after(errorEl);
-                    return false;
-                } else {
-                    temp = errorEl.get(0);
-                    // this is for zepto
-                    if (temp.parentNode) {
-                        temp.parentNode.removeChild(temp);
+                    // clean it or trim it
+                    if (isFunction(opts.clean)) {
+                        val = opts.clean(el.val());
+                    } else if (!opts.trim && !password) {
+                        val = trim(el);
+                    } else {
+                        val = el.val();
                     }
-                    el.removeClass('unhappy');
-                    return true;
-                }
-            };
-            field.bind(config.when || 'blur', field.testValid);
+
+                    // write it back to the field
+                    el.val(val);
+
+                    // get the value
+                    gotFunc = ((val.length > 0 || required === 'sometimes') && isFunction(opts.test));
+
+                    // check if we've got an error on our hands
+                    if (submit === true && required === true && val.length === 0) {
+                        error = true;
+                    } else if (gotFunc) {
+                        error = !opts.test(val, arg);
+                    }
+
+                    if (error) {
+                        el.addClass('unhappy').after(errorEl);
+                        return false;
+                    } else {
+                        temp = errorEl.get(0);
+                        // this is for zepto
+                        if (temp.parentNode) {
+                            temp.parentNode.removeChild(temp);
+                        }
+                        el.removeClass('unhappy');
+                        return true;
+                    }
+                };
+                field.bind(config.when || 'blur', field.testValid);                
+            }
         }
 
         for (item in config.fields) {
